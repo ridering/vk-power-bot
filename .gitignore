@@ -25,6 +25,10 @@
 .idea/**/dbnavigator.xml
 
 .env
+2^100000000.txt
+2^200000000.txt
+2^400000000.txt
+datum.json
 
 # Gradle
 .idea/**/gradle.xml
