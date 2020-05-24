@@ -9,7 +9,7 @@ import vk_api
 from dotenv import load_dotenv
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload, DEFAULT_CHUNK_SIZE
+from googleapiclient.http import MediaIoBaseUpload, DEFAULT_CHUNK_SIZE, MediaIoBaseDownload
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 
 load_dotenv()
@@ -68,9 +68,23 @@ def send(name, num):
                                fields='id').execute()
 
 
+def download_file(file_id, filename):
+    request = service.files().get_media(fileId=file_id)
+    fh = io.FileIO(filename, 'wb')
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while done is False:
+        status, done = downloader.next_chunk()
+
+
 def main():
     with open('vip-users.json', encoding='UTF-8', mode='r') as users:
         vip = json.load(users)["users"]
+
+    download_file('1ruaPtTaErkZHqEBzD5frP7Im_l9YN9eW', '2^100000000.txt')
+    download_file('1kbEHJ8gh-a4e4F34QSVKVEKDIQt5aw2r', '2^200000000.txt')
+    download_file('17HhTmD1Pq58vT9InHeg45VwatQXCKDtU', '2^400000000.txt')
+
 
     vk_session = vk_api.VkApi(token=os.environ.get('token'))
 
