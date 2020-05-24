@@ -85,7 +85,6 @@ def main():
     download_file('1kbEHJ8gh-a4e4F34QSVKVEKDIQt5aw2r', '2^200000000.txt')
     download_file('17HhTmD1Pq58vT9InHeg45VwatQXCKDtU', '2^400000000.txt')
 
-
     vk_session = vk_api.VkApi(token=os.environ.get('token'))
 
     longpoll = VkBotLongPoll(vk_session, os.environ.get('num'))
