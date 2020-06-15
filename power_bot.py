@@ -37,6 +37,7 @@ credentials = service_account.Credentials.from_service_account_file(
 service = build('drive', 'v3', credentials=credentials)
 
 folder_id = '1N_joe7WdtyRuu_v_3FP-yaK5WMGAqkfO'
+calc_data = []
 
 
 class Upload(MediaIoBaseUpload):
@@ -77,16 +78,8 @@ def download_file(file_id, filename):
         status, done = downloader.next_chunk()
 
 
-def main():
-    with open('vip-users.json', encoding='UTF-8', mode='r') as users:
-        vip = json.load(users)["users"]
-
-    download_file('1ruaPtTaErkZHqEBzD5frP7Im_l9YN9eW', '2^100000000.txt')
-    download_file('1kbEHJ8gh-a4e4F34QSVKVEKDIQt5aw2r', '2^200000000.txt')
-    download_file('17HhTmD1Pq58vT9InHeg45VwatQXCKDtU', '2^400000000.txt')
-
-    vk_session = vk_api.VkApi(token=os.environ.get('token'))
-
+def handler(vk_session, vip):
+    global calc_data
     longpoll = VkBotLongPoll(vk_session, os.environ.get('num'))
 
     for event in longpoll.listen():
@@ -99,26 +92,8 @@ def main():
                 base, power = [int(message[0]), int(message[1])]
 
                 if user_id in vip:
-                    if base == 2 and power % 100000000 == 0:
-                        if power == 500000000:
-                            with open('2^400000000.txt', mode='r') as four_hundred_mil:
-                                with open('2^100000000.txt', mode='r') as one_hundred_mil:
-                                    num = int(four_hundred_mil.read()) * int(one_hundred_mil.read())
-                        elif power == 1000000000:
-                            with open('2^400000000.txt', mode='r') as four_hundred_mil:
-                                with open('2^200000000.txt', mode='r') as two_hundred_mil:
-                                    four = int(four_hundred_mil.read())
-                                    num = four * four * int(two_hundred_mil.read())
-                        else:
-                            with open('2^100000000.txt', mode='r') as one_hundred_mil:
-                                num = int(one_hundred_mil.read()) ** (power // 100000000)
-                    else:
-                        num = base ** power
-
-                    send(f'{base}^{power}.txt', num)
-                    vk.messages.send(user_id=user_id,
-                                     message='Готово',
-                                     random_id=random.randint(0, 2 ** 64))
+                    calc_data = [base, power, vk, user_id]
+                    return
                 else:
                     if base > 10000 or power > 10000:
                         vk.messages.send(user_id=user_id,
@@ -138,6 +113,46 @@ def main():
                                  message='Некорректный ввод\n'
                                          'Ну или ошибка сервера',
                                  random_id=random.randint(0, 2 ** 64))
+
+
+def computation(base, power, vk, user_id):
+    global calc_data
+    if base == 2 and power % 100000000 == 0:
+        if power == 500000000:
+            with open('2^400000000.txt', mode='r') as four_hundred_mil:
+                with open('2^100000000.txt', mode='r') as one_hundred_mil:
+                    num = int(four_hundred_mil.read()) * int(one_hundred_mil.read())
+        elif power == 1000000000:
+            with open('2^400000000.txt', mode='r') as four_hundred_mil:
+                with open('2^200000000.txt', mode='r') as two_hundred_mil:
+                    four = int(four_hundred_mil.read())
+                    num = four * four * int(two_hundred_mil.read())
+        else:
+            with open('2^100000000.txt', mode='r') as one_hundred_mil:
+                num = int(one_hundred_mil.read()) ** (power // 100000000)
+    else:
+        num = base ** power
+
+    send(f'{base}^{power}.txt', num)
+    vk.messages.send(user_id=user_id,
+                     message='Готово',
+                     random_id=random.randint(0, 2 ** 64))
+    calc_data = []
+
+
+def main():
+    with open('vip-users.json', encoding='UTF-8', mode='r') as users:
+        vip = json.load(users)["users"]
+
+    download_file('1ruaPtTaErkZHqEBzD5frP7Im_l9YN9eW', '2^100000000.txt')
+    download_file('1kbEHJ8gh-a4e4F34QSVKVEKDIQt5aw2r', '2^200000000.txt')
+    download_file('17HhTmD1Pq58vT9InHeg45VwatQXCKDtU', '2^400000000.txt')
+
+    vk_session = vk_api.VkApi(token=os.environ.get('token'))
+    while True:
+        handler(vk_session, vip)
+        if calc_data:
+            computation(*calc_data)
 
 
 if __name__ == '__main__':
